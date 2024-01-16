@@ -14,7 +14,7 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-load_dotenv()
+load_dotenv(os.getcwd() + '/.env')
 
 def main(argv):
    dockerComposePath = ''

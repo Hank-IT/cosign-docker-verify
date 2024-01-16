@@ -25,6 +25,8 @@ The script also allows you to directly specify a verification key:
 cosign.verify=hashivault://<key-name>
 ```
 
+The script also expands environment variables used in the "image" property of the service definition. System variables and .env variables are used.
+
 # Usage
 
 ## docker-compose
