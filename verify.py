@@ -72,7 +72,9 @@ def main(argv):
                else:
                  localKey = key
 
-               eligibleServices.append({ 'service': service, 'image': os.path.expandvars(dockerComposeYaml['services'][service]['image']), 'key': localKey })
+               image = dockerComposeYaml['services'][service]['image'].replace(':?err', '')
+
+               eligibleServices.append({ 'service': service, 'image': os.path.expandvars(image), 'key': localKey })
 
    for eligibleService in eligibleServices:
        if eligibleService['key'] == '':
