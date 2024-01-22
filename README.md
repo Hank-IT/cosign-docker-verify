@@ -48,5 +48,5 @@ If your docker-compose file is named differently you have to specify the name us
 
 ## Ignore cosign transparency log:
 ```
-./verify.py --ignore-tlog
+./verify.py --private-infrastructure
 ```
