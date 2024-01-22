@@ -94,7 +94,7 @@ def main(argv):
        print(bcolors.OKBLUE + "Verifying service " + bcolors.OKCYAN + eligibleService['service'] + bcolors.ENDC)
 
        try:
-          command = ['cosign', 'verify', '--insecure-ignore-tlog', '--key', eligibleService['key'], digest] if ignoreTlog else ['cosign', 'verify', '--key', key, digest]
+          command = ['cosign', 'verify', '--insecure-ignore-tlog', '--key', eligibleService['key'], digest] if ignoreTlog else ['cosign', 'verify', '--key', eligibleService['key'], digest]
 
           result = subprocess.run(command, stdout=subprocess.PIPE, check=True, capture_output=False)
           print(result.stdout.decode('utf-8'))
