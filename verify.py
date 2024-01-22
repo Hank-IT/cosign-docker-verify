@@ -27,17 +27,17 @@ def main(argv):
      print(bcolors.FAIL + "This script requires cosign. Please install it." + bcolors.ENDC)
      sys.exit()
 
-   opts, args = getopt.getopt(argv,"hk:i",["docker-compose=","ignore-tlog"])
+   opts, args = getopt.getopt(argv,"hk:i",["docker-compose=","private-infrastructure "])
 
    for opt, arg in opts:
       if opt == '-h':
-         print(bcolors.OKBLUE + 'verify.py -k <key> --docker-compose=<docker-compose> --ignore-tlog' + bcolors.ENDC)
+         print(bcolors.OKBLUE + 'verify.py -k <key> --docker-compose=<docker-compose> --private-infrastructure ' + bcolors.ENDC)
          sys.exit()
       elif opt in '-k':
          key = arg
       elif opt in ("--docker-compose"):
          dockerComposePath = arg
-      elif opt in ("--ignore-tlog"):
+      elif opt in ("--private-infrastructure "):
          ignoreTlog = True
 
    if key == '':
@@ -94,7 +94,7 @@ def main(argv):
        print(bcolors.OKBLUE + "Verifying service " + bcolors.OKCYAN + eligibleService['service'] + bcolors.ENDC)
 
        try:
-          command = ['cosign', 'verify', '--insecure-ignore-tlog', '--key', eligibleService['key'], digest] if ignoreTlog else ['cosign', 'verify', '--key', eligibleService['key'], digest]
+          command = ['cosign', 'verify', '--private-infrastructure ', '--key', eligibleService['key'], digest] if ignoreTlog else ['cosign', 'verify', '--key', eligibleService['key'], digest]
 
           result = subprocess.run(command, stdout=subprocess.PIPE, check=True, capture_output=False)
           print(result.stdout.decode('utf-8'))
