@@ -50,14 +50,22 @@ def main(argv):
          print(bcolors.FAIL + "Oops! Could not find docker-compose file at " + dockerComposePath + bcolors.ENDC)
          sys.exit()
    else:
+      candidateFiles = ['docker-compose.yaml', 'docker-compose.yml', 'compose.yaml', 'compose.yml']
+      foundFiles = [f for f in candidateFiles if os.path.exists(f)]
+
+      if len(foundFiles) == 0:
+         print(bcolors.FAIL + "Oops! Could not find docker-compose file. Please specify path with --docker-compose=<path>" + bcolors.ENDC)
+         sys.exit()
+      elif len(foundFiles) > 1:
+         print(bcolors.FAIL + "Oops! Multiple docker-compose files found (" + ", ".join(foundFiles) + "). It's unclear which to use, please specify the file with --docker-compose=<path>" + bcolors.ENDC)
+         sys.exit()
+
+      dockerComposePath = foundFiles[0]
       try:
-         dockerCompose = open('docker-compose.yaml', 'r')
+         dockerCompose = open(dockerComposePath, 'r')
       except Exception:
-         try:
-            dockerCompose = open('docker-compose.yml', 'r')
-         except Exception:
-            print("(bcolors.FAIL + Oops! Could not find docker-compose file. Please specify path with --docker-compose=<path>" + bcolors.ENDC)
-            sys.exit()
+         print(bcolors.FAIL + "Oops! Could not find docker-compose file at " + dockerComposePath + bcolors.ENDC)
+         sys.exit()
 
    dockerComposeYaml = yaml.safe_load(dockerCompose)
 
