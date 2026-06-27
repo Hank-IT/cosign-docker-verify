@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, getopt, yaml, os, subprocess, shutil
+import sys, getopt, yaml, os, subprocess, shutil, re
 from dotenv import load_dotenv
 
 class bcolors:
@@ -15,6 +15,62 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 load_dotenv(os.getcwd() + '/.env')
+
+ENV_VAR_PATTERN = re.compile(r'\$(\$|[A-Za-z_][A-Za-z0-9_]*|\{([^}]*)\})')
+
+def interpolate_env(value):
+   def split_expression(expression):
+      for operator in (':-', ':?', ':+', '-', '?', '+'):
+         if operator in expression:
+            name, remainder = expression.split(operator, 1)
+            return name, operator, remainder
+
+      return expression, None, None
+
+   def replace(match):
+      token = match.group(1)
+
+      if token == '$':
+         return '$'
+
+      if not token.startswith('{'):
+         return os.environ.get(token, '')
+
+      name, operator, remainder = split_expression(match.group(2))
+      value = os.environ.get(name)
+      is_set = value is not None
+      is_non_empty = is_set and value != ''
+
+      if operator is None:
+         return value if is_set else ''
+
+      if operator == ':-':
+         return value if is_non_empty else remainder
+
+      if operator == '-':
+         return value if is_set else remainder
+
+      if operator == ':?':
+         if is_non_empty:
+            return value
+
+         raise ValueError(remainder or (name + ' is required'))
+
+      if operator == '?':
+         if is_set:
+            return value
+
+         raise ValueError(remainder or (name + ' is required'))
+
+      if operator == ':+':
+         return remainder if is_non_empty else ''
+
+      if operator == '+':
+         return remainder if is_set else ''
+
+      return match.group(0)
+
+   return ENV_VAR_PATTERN.sub(replace, value)
 
 def main(argv):
    dockerComposePath = ''
@@ -80,9 +136,15 @@ def main(argv):
                else:
                  localKey = key
 
-               image = dockerComposeYaml['services'][service]['image'].replace(':?err', '')
+               image = dockerComposeYaml['services'][service]['image']
 
-               eligibleServices.append({ 'service': service, 'image': os.path.expandvars(image), 'key': localKey })
+               try:
+                  interpolatedImage = interpolate_env(image)
+               except ValueError as err:
+                  print(bcolors.FAIL + "Oops! Service " + service + " image environment interpolation failed: " + str(err) + bcolors.ENDC)
+                  continue
+
+               eligibleServices.append({ 'service': service, 'image': interpolatedImage, 'key': localKey })
 
    for eligibleService in eligibleServices:
        if eligibleService['key'] == '':
